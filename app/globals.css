@@ -1,0 +1,118 @@
+/* app/globals.css */
+
+/* --- Tailwind v4 core --- */
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* --- Design tokens --- */
+:root {
+  --radius: 14px;
+}
+
+/* --- Base resets & sensible defaults --- */
+@layer base {
+  /* Font family from next/font (applies your Inter var) */
+  html {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  body {
+    @apply bg-white text-neutral-900 antialiased;
+  }
+
+  /* Better focus styles everywhere by default */
+  :focus-visible {
+    @apply outline-none ring-2 ring-offset-2 ring-blue-500/70 ring-offset-white;
+  }
+
+  /* Text selection */
+  ::selection {
+    @apply bg-blue-500/20;
+  }
+
+  /* Prose defaults (if you use @tailwindcss/typography) */
+  .prose {
+    @apply prose-neutral;
+  }
+}
+
+/* --- Custom utilities --- */
+@utility link {
+  @apply underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-600;
+}
+
+@utility nav-link {
+  @apply text-sm text-neutral-700 hover:underline underline-offset-4;
+}
+
+@utility btn-base {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium
+         transition-shadow shadow-sm border border-neutral-200/70;
+}
+
+/* neutral button */
+@utility btn {
+  @apply btn-base bg-white hover:shadow-md;
+}
+
+/* primary button */
+@utility btn-primary {
+  @apply btn-base bg-blue-600 text-white border-transparent hover:bg-blue-700 hover:shadow-md;
+}
+
+/* ghost button */
+@utility btn-ghost {
+  @apply btn-base bg-transparent border-transparent shadow-none hover:bg-neutral-50;
+}
+
+
+@utility card {
+  @apply rounded-2xl border border-neutral-200/70 bg-white shadow-sm transition-transform;
+}
+
+@utility card-hover {
+  @apply shadow-md -translate-y-0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card { @apply transition-none; }
+  .card:hover { @apply shadow-sm translate-y-0; }
+}
+
+@utility badge {
+  @apply inline-flex items-center rounded-full bg-neutral-100 text-neutral-700 text-xs px-3 py-1;
+}
+
+@utility badge-blue   { @apply bg-blue-50   text-blue-700; }
+@utility badge-amber  { @apply bg-amber-50  text-amber-700; }
+@utility badge-green  { @apply bg-green-50  text-green-700; }
+
+@utility muted { @apply text-neutral-600; }
+
+@utility h1 { @apply text-3xl md:text-4xl font-semibold tracking-tight; }
+@utility h2 { @apply text-xl  md:text-2xl font-semibold; }
+
+@utility wrap { @apply mx-auto max-w-5xl px-5; }
+
+@utility shadow-hover { @apply transition-shadow hover:shadow-md; }
+@utility ring-focus   { @apply focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2; }
+
+.tech-tree, .tech-tree ul { margin: 0; padding: 0; list-style: none; }
+.tech-tree li::before {
+  content: "";
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  bottom: -0.25rem;
+  width: 1px;
+  background: rgb(229 231 235); /* neutral-200 */
+}
+.tech-tree li > ul::before {
+  content: "";
+  position: absolute;
+  left: -0.5rem;
+  top: 0.8rem;
+  width: 0.75rem;
+  height: 1px;
+  background: rgb(229 231 235);
+}

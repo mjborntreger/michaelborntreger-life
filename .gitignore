@@ -1,0 +1,22 @@
+# deps & builds
+node_modules/
+.next/
+out/
+dist/
+.cache/
+.vercel/
+
+# env/secrets
+.env
+.env.*
+!.env.example
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
