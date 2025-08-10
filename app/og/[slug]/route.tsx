@@ -1,11 +1,7 @@
 import { ImageResponse } from 'next/og';
 
-// (optional but nice)
-export const runtime = 'edge';
-export const contentType = 'image/png';
-export const size = { width: 1200, height: 630 };
+export const runtime = 'edge'; // ok to keep
 
-// If you want the slug, accept it from params:
 export async function GET(
   _req: Request,
   { params }: { params: { slug: string } }
@@ -18,6 +14,6 @@ export async function GET(
         {slug ? `Michael Borntreger • ${slug}` : 'Michael Borntreger'}
       </div>
     ),
-    size
+    { width: 1200, height: 630 } // pass size here, not as exports
   );
 }
