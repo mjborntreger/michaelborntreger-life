@@ -51,6 +51,22 @@ type ProjectNode = {
   title: string;
   content?: string | null;
   date?: string | null;
+  seo?: {
+    title?: string;
+    description?: string;
+    canonicalUrl?: string;
+    focusKeywords?: string[];
+    openGraph?: {
+      title?: string;
+      description?: string;
+      url?: string;
+      type?: string;
+      siteName?: string;
+      locale?: string;
+      image?: { url?: string; secureUrl?: string; width?: number; height?: number; type?: string };
+      articleMeta?: { publishedTime?: string; modifiedTime?: string; section?: string };
+    }
+  }
   projectFields?: {
     role?: string | null;
     startDate?: string | null;
@@ -97,16 +113,35 @@ export type ProjectCard = {
   endDate?: string | null;
 };
 
-export type Project = {
+type Project = {
+  slug: string;
   title: string;
   contentHtml: string;
-  role: string;
-  techStack: SelectedTech[]; // structured terms for tree rendering
-  heroImage: WPImage | null;
-  links: Array<{ label: string; url: string }>;
+  date?: string | null;
+  role?: string | null;
   startDate?: string | null;
   endDate?: string | null;
+  heroImage?: { url: string; altText?: string | null } | null;
+  techStack: { dbId: number; name: string }[];
+  links: { label: string; url: string }[];
+  seo?: {
+    title?: string;
+    description?: string;
+    canonicalUrl?: string;
+    focusKeywords?: string[];
+    openGraph?: {
+      title?: string;
+      description?: string;
+      url?: string;
+      type?: string;
+      siteName?: string;
+      locale?: string;
+      image?: { url?: string; secureUrl?: string; width?: number; height?: number; type?: string };
+      articleMeta?: { publishedTime?: string; modifiedTime?: string; section?: string };
+    };
+  } | null;
 };
+
 
 export type Post = {
   slug: string;
@@ -124,7 +159,6 @@ export async function listRecentProjects(limit = 6): Promise<ProjectCard[]> {
         nodes {
           slug
           title
-          date
           projectFields {
             role
             startDate
@@ -210,28 +244,71 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   const query = /* GraphQL */ `
     query ProjectBySlug($slug: ID!) {
       project(id: $slug, idType: SLUG) {
+        slug
         title
         content
+        date
+        seo {
+          title
+          description
+          canonicalUrl
+          focusKeywords
+          openGraph {
+            title
+            description
+            url
+            type
+            siteName
+            locale
+            updatedTime
+            image {
+              url
+              secureUrl
+              width
+              height
+              type
+            }
+            articleMeta {
+              author
+              publisher
+              section
+              publishedTime
+              modifiedTime
+            }
+          }
+        }
         projectFields {
           role
-          startDate       # NEW
-          endDate         # NEW
+          startDate
+          endDate
           techStack {
             edges {
               node {
                 id
                 databaseId
                 name
-                ... on HierarchicalTermNode { parentDatabaseId }
+                ... on HierarchicalTermNode {
+                  parentDatabaseId
+                }
               }
             }
           }
-          heroImage { node { id sourceUrl altText } }
-          links { label url }
+          heroImage {
+            node {
+              id
+              sourceUrl
+              altText
+            }
+          }
+          links {
+            label
+            url
+          }
         }
       }
     }
   `;
+
   const data = await request<{ project: ProjectNode | null }>(query, { slug });
   const p = data.project;
   if (!p) return null;
@@ -251,25 +328,36 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
       .filter((x): x is SelectedTech => Boolean(x)) ?? [];
 
   const heroImage = p.projectFields?.heroImage?.node
-    ? { url: p.projectFields.heroImage.node.sourceUrl, altText: p.projectFields.heroImage.node.altText ?? null }
+    ? {
+        url: p.projectFields.heroImage.node.sourceUrl,
+        altText: p.projectFields.heroImage.node.altText ?? null,
+      }
     : null;
 
   const links =
     p.projectFields?.links
-      ?.map(l => (l?.label && l?.url ? { label: l.label, url: l.url } : null))
-      .filter((x): x is { label: string; url: string } => Boolean(x)) ?? [];
+      ?.map(l =>
+        l?.label && l?.url ? { label: l.label, url: l.url } : null
+      )
+      .filter(
+        (x): x is { label: string; url: string } => Boolean(x)
+      ) ?? [];
 
   return {
+    slug: p.slug,
     title: p.title,
-    contentHtml: p.content ?? "",
-    role: p.projectFields?.role ?? "",
+    contentHtml: p.content ?? '',
+    date: p.date ?? null,
+    role: p.projectFields?.role ?? '',
     techStack,
     heroImage,
     links,
-    startDate: p.projectFields?.startDate ?? null, // NEW
-    endDate: p.projectFields?.endDate ?? null,     // NEW
+    startDate: p.projectFields?.startDate ?? null,
+    endDate: p.projectFields?.endDate ?? null,
+    seo: p.seo ?? null,
   };
 }
+
 
 /* ===================== All Tech Stack Terms (for tree building) ===================== */
 
@@ -331,25 +419,57 @@ export async function listPostSlugs(limit = 200): Promise<string[]> {
     .filter((s): s is string => Boolean(s));
 }
 
-export async function getPostBySlug(slug: string): Promise<Post | null> {
+export async function getPostBySlug(slug: string) {
   const query = /* GraphQL */ `
-    query PostBySlug($slug: String!) {
-      postBy(slug: $slug) {
-        title
-        date
-        content
+    query PostBySlug($slug: ID!) {
+      post(id: $slug, idType: SLUG) {
         slug
+        title
+        content
+        date
+        seo {
+          title
+          description
+          canonicalUrl
+          isPillarContent
+          focusKeywords
+          openGraph {
+            title
+            description
+            url
+            type
+            siteName
+            locale
+            updatedTime
+            image {
+              url
+              secureUrl
+              width
+              height
+              type
+            }
+            articleMeta {
+              author
+              publisher
+              section
+              publishedTime
+              modifiedTime
+            }
+          }
+        }
       }
     }
   `;
-  const data = await request<{ postBy: PostNode | null }>(query, { slug });
-  const p = data.postBy;
-  if (!p) return null;
+  const data = await request<{ post: any }>(query, { slug });
+  const n = data.post;
+  if (!n) return null;
+
   return {
-    title: p.title,
-    date: p.date,
-    contentHtml: p.content ?? '',
-    slug: p.slug,
+    slug: n.slug,
+    title: n.title,
+    contentHtml: n.content ?? '',
+    date: n.date ?? null,
+    seo: n.seo ?? null,
   };
 }
 

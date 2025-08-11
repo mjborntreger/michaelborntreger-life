@@ -1,5 +1,7 @@
+// app/projects/[slug]/page.tsx
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import { getProjectBySlug, listProjectSlugs, listAllTechStackTerms } from '@/lib/wp';
 import { buildTechTree, pruneTreeToSelection } from '@/lib/techTree';
 import TechStackTree from '@/components/TechStackTree';
@@ -16,6 +18,20 @@ const BRAND_STYLES: Record<string, { label: string; icon?: string }> = {
   'instagram.com': { label: 'text-fuchsia-600', icon: 'text-fuchsia-500' },
   'facebook.com': { label: 'text-blue-600', icon: 'text-blue-500' },
 };
+
+type OGType =
+  | 'website'
+  | 'article'
+  | 'book'
+  | 'profile'
+  | 'music.song'
+  | 'music.album'
+  | 'music.playlist'
+  | 'music.radio_station'
+  | 'video.movie'
+  | 'video.episode'
+  | 'video.tv_show'
+  | 'video.other';
 
 function getBrand(url: string) {
   try {
@@ -34,12 +50,88 @@ function hostname(url: string) {
 }
 
 export const revalidate = 600;
-// export const dynamicParams = false; // optional
 
+// Prebuild project pages
 export async function generateStaticParams() {
   const slugs = await listProjectSlugs(200);
   return slugs.map((slug) => ({ slug }));
 }
+
+// Rank Math → Next.js SEO
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const p = await getProjectBySlug(params.slug);
+  if (!p) return {};
+
+  const s = p.seo ?? {};
+  const og = s.openGraph ?? {};
+  const img = og.image ?? {};
+
+  const title = s.title || p.title;
+  const description = s.description || undefined;
+  const canonical = s.canonicalUrl || undefined;
+
+  // Allowed union for Next's Metadata openGraph.type
+const mapOgType = (t?: string): OGType => {
+  switch ((t || '').toLowerCase()) {
+    case 'website':
+    case 'article':
+    case 'book':
+    case 'profile':
+    case 'music.song':
+    case 'music.album':
+    case 'music.playlist':
+    case 'music.radio_station':
+    case 'video.movie':
+    case 'video.episode':
+    case 'video.tv_show':
+    case 'video.other':
+      return t as OGType;
+    default:
+      return 'website';
+  }
+};
+
+  const ogImages =
+    img?.url || img?.secureUrl
+      ? [
+          {
+            url: (img.secureUrl || img.url) as string,
+            width: img.width as number | undefined,
+            height: img.height as number | undefined,
+            type: img.type as string | undefined,
+          },
+        ]
+      : p.heroImage?.url
+      ? [{ url: p.heroImage.url }]
+      : undefined;
+
+  return {
+    title,
+    description,
+    keywords: Array.isArray(s.focusKeywords) ? s.focusKeywords : undefined,
+    alternates: { canonical },
+    openGraph: {
+      title: og.title || title,
+      description: og.description || description,
+      url: og.url || canonical,
+      type: mapOgType(og.type),
+      siteName: og.siteName,
+      locale: og.locale,
+      images: ogImages,
+      // Article-specific metadata (safe to include; ignored if type ≠ 'article')
+      publishedTime: og.articleMeta?.publishedTime || undefined,
+      modifiedTime: og.articleMeta?.modifiedTime || undefined,
+      section: og.articleMeta?.section || undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: og.title || title,
+      description: og.description || description,
+      images: ogImages?.length ? [ogImages[0]!.url as string] : undefined,
+    },
+  };
+}
+
 
 type PageProps = { params: { slug: string } };
 
@@ -53,14 +145,14 @@ export default async function ProjectPage({ params }: PageProps) {
     role,
     contentHtml,
     techStack,
-    links,
+    links = [],
     startDate,
     endDate,
   } = project;
 
   // Build taxonomy tree and prune to this project's selected terms
   let tree: ReturnType<typeof buildTechTree> = [];
-  const selectedIds = techStack.map(t => t.dbId);
+  const selectedIds = (techStack ?? []).map((t) => t.dbId).filter(Boolean);
   if (selectedIds.length) {
     const allTerms = await listAllTechStackTerms();
     if (allTerms.length) {
