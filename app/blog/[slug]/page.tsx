@@ -35,7 +35,19 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       title: og.title || title,
       description: og.description || description,
       url: og.url || canonical,
-      type: og.type || 'article',
+      type: (og.type?.toLowerCase?.() as
+        | 'article'
+        | 'website'
+        | 'book'
+        | 'profile'
+        | 'music.song'
+        | 'music.album'
+        | 'music.playlist'
+        | 'music.radio_station'
+        | 'video.movie'
+        | 'video.episode'
+        | 'video.tv_show'
+        | 'video.other') || 'article',
       siteName: og.siteName,
       locale: og.locale,
       images:
@@ -61,26 +73,68 @@ export default async function PostPage({ params }: PageProps) {
   const post = await getPostBySlug(params.slug);
   if (!post) notFound();
 
+  // ---------- JSON-LD (BlogPosting) ----------
+  const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const url = `${BASE_URL}/blog/${params.slug}`;
+
+  const ogImg =
+    post.seo?.openGraph?.image?.secureUrl ||
+    post.seo?.openGraph?.image?.url ||
+    undefined;
+
+  const strip = (html: string) =>
+    html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+
+  const description =
+    post.seo?.description ||
+    (post.contentHtml ? strip(post.contentHtml).slice(0, 300) : undefined);
+
+  const blogJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    headline: post.seo?.title || post.title,
+    name: post.seo?.title || post.title,
+    description,
+    image: ogImg,
+    url,
+    datePublished: post.date || undefined,
+    dateModified: post.date || undefined,
+    inLanguage: 'en',
+    author: { '@type': 'Person', name: 'Michael Borntreger', url: BASE_URL },
+    publisher: { '@type': 'Person', name: 'Michael Borntreger', url: BASE_URL },
+    keywords: Array.isArray(post.seo?.focusKeywords) ? post.seo!.focusKeywords : undefined,
+    articleSection: post.seo?.openGraph?.articleMeta?.section || undefined,
+  };
+  // -------------------------------------------
+
   return (
-    <article className="space-y-6">
-      <div className="pt-2">
-        <Link href="/blog" className="link text-sm">← Back to Blog</Link>
-      </div>
-
-      <header className="space-y-2">
-        <h1 className="h1">{post.title}</h1>
-        {post.date ? <FormattedDate date={post.date} className="muted text-sm" /> : null}
-      </header>
-
-      {/* Post body */}
-      <div
-        className="prose prose-neutral max-w-none"
-        dangerouslySetInnerHTML={{ __html: post.contentHtml }}
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(blogJsonLd, (_k, v) => (v ?? undefined)),
+        }}
       />
+      <article className="space-y-6">
+        <div className="pt-2">
+          <Link href="/blog" className="link text-sm">← Back to Blog</Link>
+        </div>
 
-      <footer className="pt-6">
-        <Link href="/blog" className="link text-sm">← Back to Blog</Link>
-      </footer>
-    </article>
+        <header className="space-y-2">
+          <h1 className="h1">{post.title}</h1>
+          {post.date ? <FormattedDate date={post.date} className="muted text-sm" /> : null}
+        </header>
+
+        <div
+          className="prose prose-neutral max-w-none"
+          dangerouslySetInnerHTML={{ __html: post.contentHtml }}
+        />
+
+        <footer className="pt-6">
+          <Link href="/blog" className="link text-sm">← Back to Blog</Link>
+        </footer>
+      </article>
+    </>
   );
 }
