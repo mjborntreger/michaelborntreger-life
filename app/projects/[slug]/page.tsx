@@ -118,7 +118,6 @@ const mapOgType = (t?: string): OGType => {
       siteName: og.siteName,
       locale: og.locale,
       images: ogImages,
-      // Article-specific metadata (safe to include; ignored if type ≠ 'article')
       publishedTime: og.articleMeta?.publishedTime || undefined,
       modifiedTime: og.articleMeta?.modifiedTime || undefined,
       section: og.articleMeta?.section || undefined,
@@ -135,9 +134,49 @@ const mapOgType = (t?: string): OGType => {
 
 type PageProps = { params: { slug: string } };
 
-export default async function ProjectPage({ params }: PageProps) {
+export default async function ProjectPage({ params }: { params: { slug: string } }) {
   const project = await getProjectBySlug(params.slug);
   if (!project) return notFound();
+
+  // Project Schema
+  const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const url = `${BASE_URL}/projects/${params.slug}`;
+
+  const ogImg =
+    project.seo?.openGraph?.image?.secureUrl ||
+    project.seo?.openGraph?.image?.url ||
+    project.heroImage?.url ||
+    undefined;
+
+  const sameAs = (project.links || []).map(l => l.url).filter(Boolean);
+
+  const techKeywords = (project.techStack || []).map(t => t.name);
+  const aboutThings = techKeywords.map(name => ({ '@type': 'Thing', name }));
+
+  const strip = (html: string) =>
+    html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+
+  const description =
+    project.seo?.description ||
+    (project.contentHtml ? strip(project.contentHtml).slice(0, 300) : undefined);
+
+  const projectJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: project.seo?.title || project.title,
+    description,
+    url,
+    image: ogImg,
+    inLanguage: 'en',
+    datePublished: project.startDate || project.date || undefined,
+    dateModified: project.date || undefined,
+    author: { '@type': 'Person', name: 'Michael Borntreger', url: BASE_URL },
+    publisher: { '@type': 'Person', name: 'Michael Borntreger', url: BASE_URL },
+    isPartOf: { '@type': 'CollectionPage', name: 'Projects', url: `${BASE_URL}/projects` },
+    keywords: techKeywords.length ? techKeywords : undefined,
+    about: aboutThings.length ? aboutThings : undefined,
+    sameAs: sameAs.length ? sameAs : undefined,
+  };
 
   const {
     title,
@@ -162,92 +201,99 @@ export default async function ProjectPage({ params }: PageProps) {
   }
 
   return (
-    <article className="mx-auto max-w-3xl space-y-6">
-      <div className="pt-2">
-        <Link href="/projects" className="link text-sm">← Back to Projects</Link>
-      </div>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(projectJsonLd, (_k, v) => (v ?? undefined)),
+        }}
+      />
+      <article className="mx-auto max-w-3xl space-y-6">
+        <div className="pt-2">
+          <Link href="/projects" className="link text-sm">← Back to Projects</Link>
+        </div>
 
-      <h1 className="h1">{title}</h1>
+        <h1 className="h1">{title}</h1>
 
-      {/* Meta line: Date range + role */}
-      {(startDate || role) && (
-        <p className="text-sm text-neutral-600">
-          {startDate ? (
-            <>
-              <FormattedDate
-                date={startDate}
-                className="!m-0 !p-0 !text-inherit"
-                format={{ month: 'short', year: 'numeric' }}
-              />
-              {' — '}
-              {endDate ? (
+        {/* Meta line: Date range + role */}
+        {(startDate || role) && (
+          <p className="text-sm text-neutral-600">
+            {startDate ? (
+              <>
                 <FormattedDate
-                  date={endDate}
+                  date={startDate}
                   className="!m-0 !p-0 !text-inherit"
                   format={{ month: 'short', year: 'numeric' }}
                 />
-              ) : (
-                <span>Current</span>
-              )}
-              {role ? ' · ' : null}
-            </>
-          ) : null}
-          {role}
-        </p>
-      )}
+                {' — '}
+                {endDate ? (
+                  <FormattedDate
+                    date={endDate}
+                    className="!m-0 !p-0 !text-inherit"
+                    format={{ month: 'short', year: 'numeric' }}
+                  />
+                ) : (
+                  <span>Current</span>
+                )}
+                {role ? ' · ' : null}
+              </>
+            ) : null}
+            {role}
+          </p>
+        )}
 
-      {heroImage?.url && (
-        <img
-          src={heroImage.url}
-          alt={heroImage.altText || title}
-          className="w-full rounded-2xl bg-neutral-50"
+        {heroImage?.url && (
+          <img
+            src={heroImage.url}
+            alt={heroImage.altText || title}
+            className="w-full rounded-2xl bg-neutral-50"
+          />
+        )}
+
+        <div
+          className="prose prose-neutral max-w-none"
+          dangerouslySetInnerHTML={{ __html: contentHtml }}
         />
-      )}
 
-      <div
-        className="prose prose-neutral max-w-none"
-        dangerouslySetInnerHTML={{ __html: contentHtml }}
-      />
+        {tree.length > 0 && (
+          <section className="mt-4">
+            <h3 className="font-semibold mb-2">Tech Stack</h3>
+            <TechStackTree tree={tree} />
+          </section>
+        )}
 
-      {tree.length > 0 && (
-        <section className="mt-4">
-          <h3 className="font-semibold mb-2">Tech Stack</h3>
-          <TechStackTree tree={tree} />
-        </section>
-      )}
+        {links.length > 0 ? (
+          <section className="mt-4">
+            <h3 className="font-semibold mb-2">Links</h3>
+            <ul className="grid gap-4 sm:grid-cols-2">
+              {links.map((l) => {
+                const brand = getBrand(l.url);
+                return (
+                  <li key={l.url}>
+                    <a
+                      href={l.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${l.label} (opens in new tab)`}
+                      className="card p-4 shadow-hover flex flex-col justify-between h-full hover:bg-neutral-50"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-2">
+                          <Favicon url={l.url} className="rounded" size={16} />
+                          <span className={`font-medium ${brand.label}`}>{l.label}</span>
+                        </span>
+                        <ArrowTopRightOnSquareIcon className={`w-4 h-4 ${brand.icon}`} aria-hidden="true" />
+                      </div>
 
-      {links.length > 0 ? (
-        <section className="mt-4">
-          <h3 className="font-semibold mb-2">Links</h3>
-          <ul className="grid gap-4 sm:grid-cols-2">
-            {links.map((l) => {
-              const brand = getBrand(l.url);
-              return (
-                <li key={l.url}>
-                  <a
-                    href={l.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`${l.label} (opens in new tab)`}
-                    className="card p-4 shadow-hover flex flex-col justify-between h-full hover:bg-neutral-50"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-2">
-                        <Favicon url={l.url} className="rounded" size={16} />
-                        <span className={`font-medium ${brand.label}`}>{l.label}</span>
-                      </span>
-                      <ArrowTopRightOnSquareIcon className={`w-4 h-4 ${brand.icon}`} aria-hidden="true" />
-                    </div>
-
-                    {/* Repeater doesn't have descriptions, so show hostname */}
-                    <span className="block text-sm muted truncate mt-1">{hostname(l.url)}</span>
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      ) : null}
+                      {/* Repeater doesn't have descriptions, so show hostname */}
+                      <span className="block text-sm muted truncate mt-1">{hostname(l.url)}</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ) : null}
 
       <footer className="pt-6">
         <Link href="/projects" className="link text-sm">
@@ -255,5 +301,6 @@ export default async function ProjectPage({ params }: PageProps) {
         </Link>
       </footer>
     </article>
+    </>
   );
 }
