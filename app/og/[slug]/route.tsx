@@ -4,9 +4,9 @@ export const runtime = 'edge'; // ok to keep
 
 export async function GET(
   _req: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
-  const { slug } = params;
+  const { slug } = await params;
 
   return new ImageResponse(
     (

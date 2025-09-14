@@ -58,8 +58,9 @@ export async function generateStaticParams() {
 }
 
 // Rank Math → Next.js SEO
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const p = await getProjectBySlug(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const p = await getProjectBySlug(slug);
   if (!p) return {};
 
   const s = p.seo ?? {};
@@ -132,15 +133,16 @@ const mapOgType = (t?: string): OGType => {
 }
 
 
-type PageProps = { params: { slug: string } };
+type PageProps = { params: Promise<{ slug: string }> };
 
-export default async function ProjectPage({ params }: { params: { slug: string } }) {
-  const project = await getProjectBySlug(params.slug);
+export default async function ProjectPage({ params }: PageProps) {
+  const { slug } = await params;
+  const project = await getProjectBySlug(slug);
   if (!project) return notFound();
 
   // Project Schema
   const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-  const url = `${BASE_URL}/projects/${params.slug}`;
+  const url = `${BASE_URL}/projects/${slug}`;
 
   const ogImg =
     project.seo?.openGraph?.image?.secureUrl ||

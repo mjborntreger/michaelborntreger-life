@@ -14,8 +14,9 @@ export async function generateStaticParams() {
 }
 
 // SEO from Rank Math via WPGraphQL
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const post = await getPostBySlug(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
   if (!post) return {};
 
   const s = post.seo ?? {};
@@ -67,15 +68,16 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-type PageProps = { params: { slug: string } };
+type PageProps = { params: Promise<{ slug: string }> };
 
 export default async function PostPage({ params }: PageProps) {
-  const post = await getPostBySlug(params.slug);
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
   if (!post) notFound();
 
   // ---------- JSON-LD (BlogPosting) ----------
   const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-  const url = `${BASE_URL}/blog/${params.slug}`;
+  const url = `${BASE_URL}/blog/${slug}`;
 
   const ogImg =
     post.seo?.openGraph?.image?.secureUrl ||
