@@ -8,15 +8,17 @@ import TechStackTree from '@/components/TechStackTree';
 import FormattedDate from '@/components/FormattedDate';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import Favicon from '@/components/Favicon';
+import { TypographyH1 } from '@/components/components/ui/typography';
 
-const BRAND_STYLES: Record<string, { label: string; icon?: string }> = {
-  'github.com': { label: 'text-neutral-900', icon: 'text-neutral-500' },
-  'linkedin.com': { label: 'text-sky-700', icon: 'text-sky-500' },
-  'x.com': { label: 'text-neutral-900', icon: 'text-neutral-500' },
-  'twitter.com': { label: 'text-neutral-900', icon: 'text-neutral-500' },
-  'youtube.com': { label: 'text-red-600', icon: 'text-red-500' },
-  'instagram.com': { label: 'text-fuchsia-600', icon: 'text-fuchsia-500' },
-  'facebook.com': { label: 'text-blue-600', icon: 'text-blue-500' },
+const DEFAULT_BRAND_STYLE = { label: 'text-foreground', icon: 'text-muted-foreground' };
+const BRAND_STYLES: Record<string, { label: string; icon: string }> = {
+  'github.com': DEFAULT_BRAND_STYLE,
+  'linkedin.com': { label: 'text-primary', icon: 'text-primary' },
+  'x.com': DEFAULT_BRAND_STYLE,
+  'twitter.com': DEFAULT_BRAND_STYLE,
+  'youtube.com': { label: 'text-destructive', icon: 'text-destructive' },
+  'instagram.com': { label: 'text-accent-foreground', icon: 'text-accent-foreground' },
+  'facebook.com': { label: 'text-primary', icon: 'text-primary' },
 };
 
 type OGType =
@@ -36,9 +38,9 @@ type OGType =
 function getBrand(url: string) {
   try {
     const host = new URL(url).hostname.replace(/^www\./, '');
-    return BRAND_STYLES[host] ?? { label: 'text-blue-600', icon: 'text-neutral-400' };
+    return BRAND_STYLES[host] ?? DEFAULT_BRAND_STYLE;
   } catch {
-    return { label: 'text-blue-600', icon: 'text-neutral-400' };
+    return DEFAULT_BRAND_STYLE;
   }
 }
 function hostname(url: string) {
@@ -215,11 +217,11 @@ export default async function ProjectPage({ params }: PageProps) {
           <Link href="/projects" className="link text-sm">← Back to Projects</Link>
         </div>
 
-        <h1 className="h1">{title}</h1>
+        <TypographyH1 className="text-4xl">{title}</TypographyH1>
 
         {/* Meta line: Date range + role */}
         {(startDate || role) && (
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm text-muted-foreground">
             {startDate ? (
               <>
                 <FormattedDate
@@ -248,12 +250,12 @@ export default async function ProjectPage({ params }: PageProps) {
           <img
             src={heroImage.url}
             alt={heroImage.altText || title}
-            className="w-full rounded-2xl bg-neutral-50"
+            className="w-full rounded-2xl bg-muted"
           />
         )}
 
         <div
-          className="prose prose-neutral max-w-none"
+          className="prose max-w-none"
           dangerouslySetInnerHTML={{ __html: contentHtml }}
         />
 
@@ -277,7 +279,7 @@ export default async function ProjectPage({ params }: PageProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${l.label} (opens in new tab)`}
-                      className="card p-4 shadow-hover flex flex-col justify-between h-full hover:bg-neutral-50"
+                      className="flex h-full flex-col justify-between rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm transition-shadow hover:bg-accent/50 hover:text-accent-foreground hover:shadow-md"
                     >
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-2">
@@ -288,7 +290,9 @@ export default async function ProjectPage({ params }: PageProps) {
                       </div>
 
                       {/* Repeater doesn't have descriptions, so show hostname */}
-                      <span className="block text-sm muted truncate mt-1">{hostname(l.url)}</span>
+                      <span className="mt-1 block truncate text-sm text-muted-foreground">
+                        {hostname(l.url)}
+                      </span>
                     </a>
                   </li>
                 );

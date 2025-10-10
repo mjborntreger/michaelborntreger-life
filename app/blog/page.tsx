@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { listRecentPosts } from '@/lib/wp';
 import FormattedDate from '@/components/FormattedDate';
+import { Card } from '@/components/components/ui/card';
+import { TypographyH1, TypographyH2, TypographyLead } from '@/components/components/ui/typography';
 
 export const revalidate = 600; // ISR
 
@@ -18,10 +20,10 @@ export default async function BlogIndex() {
     return (
       <div className="space-y-2">
         <div className="pt-2">
-             <Link href="/" className="link text-sm">← Back home</Link>
-            </div>
-        <h1 className="h1">Blog</h1>
-        <p className="muted">No posts yet.</p>
+          <Link href="/" className="link text-sm">← Back home</Link>
+        </div>
+        <TypographyH1 className="text-4xl">Blog</TypographyH1>
+        <TypographyLead className="text-base text-muted-foreground">No posts yet.</TypographyLead>
       </div>
     );
   }
@@ -30,23 +32,23 @@ export default async function BlogIndex() {
     <div className="space-y-6">
       <header className="space-y-6">
         <div className="pt-2">
-             <Link href="/" className="link text-sm">← Back home</Link>
-            </div>
-        <h1 className="h1">Blog</h1>
-        <p className="muted">Latest posts.</p>
+          <Link href="/" className="link text-sm">← Back home</Link>
+        </div>
+        <TypographyH1 className="text-4xl">Blog</TypographyH1>
+        <TypographyLead className="text-base text-muted-foreground">Latest posts.</TypographyLead>
       </header>
 
       <ul className="space-y-3">
         {posts.map((p) => (
           <li key={p.slug}>
-            <article className="card shadow-hover p-5">
-              <h2 className="text-lg font-semibold">
+            <Card className="p-5 transition-shadow hover:shadow-md">
+              <TypographyH2 className="text-lg font-semibold">
                 <Link href={`/blog/${p.slug}`} className="link">
                   {p.title}
                 </Link>
-              </h2>
+              </TypographyH2>
               <FormattedDate date={p.date} />
-            </article>
+            </Card>
           </li>
         ))}
       </ul>

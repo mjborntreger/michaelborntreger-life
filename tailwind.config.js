@@ -6,7 +6,12 @@ module.exports = {
 
   theme: {
     extend: {
-      borderRadius: { DEFAULT: 'var(--radius)' },
+      borderRadius: {
+        DEFAULT: 'var(--radius)',
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
+      },
       fontFamily: { sans: ['var(--font-inter)', 'ui-sans-serif', 'system-ui'] },
     },
   },

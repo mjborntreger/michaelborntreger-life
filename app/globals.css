@@ -2,102 +2,139 @@
 
 /* --- Tailwind v4 core --- */
 @import "tailwindcss";
+
+@source "./app/**/*.{ts,tsx}";
+@source "./components/**/*.{ts,tsx}";
+@source "./lib/**/*.{ts,tsx}";
+
+@custom-variant dark (&:is(.dark *));
 @plugin "@tailwindcss/typography";
+@plugin "tailwindcss-animate";
 
 /* --- Design tokens --- */
 :root {
-  --radius: 14px;
+  --radius: 0.625rem;
+
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 3.9%;
+  --primary: 240 5.9% 10%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --accent: 240 4.8% 95.9%;
+  --accent-foreground: 240 5.9% 10%;
+  --destructive: 0 72.2% 50.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --ring: 240 5.9% 10%;
+  --chart-1: 12 76% 61%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 240 5.3% 26.1%;
+  --sidebar-primary: 240 5.9% 10%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 240 4.8% 95.9%;
+  --sidebar-accent-foreground: 240 5.3% 26.1%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-ring: 217 91% 60%;
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 210 40% 98%;
+  --primary-foreground: 240 5.9% 10%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 215 20.2% 65.1%;
+  --chart-1: 220 70% 50%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
+  --sidebar: 240 5.9% 10%;
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-primary: 210 40% 98%;
+  --sidebar-primary-foreground: 240 5.9% 10%;
+  --sidebar-accent: 240 3.7% 15.9%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 240 3.7% 15.9%;
+  --sidebar-ring: 217 33% 80%;
 }
 
 /* --- Base resets & sensible defaults --- */
 @layer base {
-  /* Font family from next/font (applies your Inter var) */
+  :root {
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
   html {
     font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
 
+  * {
+    @apply border-border;
+  }
+
   body {
-    @apply bg-white text-neutral-900 antialiased;
+    @apply min-h-screen bg-background text-foreground antialiased;
   }
 
-  /* Better focus styles everywhere by default */
   :focus-visible {
-    @apply outline-none ring-2 ring-offset-2 ring-blue-500/70 ring-offset-white;
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
 
-  /* Text selection */
   ::selection {
-    @apply bg-blue-500/20;
+    background-color: hsl(var(--primary) / 0.15);
   }
 
-  /* Prose defaults (if you use @tailwindcss/typography) */
   .prose {
-    @apply prose-neutral;
+    @apply prose-slate dark:prose-invert;
   }
 }
 
 /* --- Custom utilities --- */
 @utility link {
-  @apply underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-600;
+  @apply underline underline-offset-4 decoration-foreground/30 transition-colors hover:text-foreground hover:decoration-foreground/60;
 }
 
 @utility nav-link {
-  @apply text-sm text-neutral-700 hover:underline underline-offset-4;
+  @apply text-sm font-medium text-muted-foreground transition-colors hover:text-foreground;
 }
 
-@utility btn-base {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium
-         transition-shadow shadow-sm border border-neutral-200/70;
+.tech-tree,
+.tech-tree ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-/* neutral button */
-@utility btn {
-  @apply btn-base bg-white hover:shadow-md;
-}
-
-/* primary button */
-@utility btn-primary {
-  @apply btn-base bg-blue-600 text-white border-transparent hover:bg-blue-700 hover:shadow-md;
-}
-
-/* ghost button */
-@utility btn-ghost {
-  @apply btn-base bg-transparent border-transparent shadow-none hover:bg-neutral-50;
-}
-
-
-@utility card {
-  @apply rounded-2xl border border-neutral-200/70 bg-white shadow-sm transition-transform;
-}
-
-@utility card-hover {
-  @apply shadow-md -translate-y-0.5;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .card { @apply transition-none; }
-  .card:hover { @apply shadow-sm translate-y-0; }
-}
-
-@utility badge {
-  @apply inline-flex items-center rounded-full bg-neutral-100 text-neutral-700 text-xs px-3 py-1;
-}
-
-@utility badge-blue   { @apply bg-blue-50   text-blue-700; }
-@utility badge-amber  { @apply bg-amber-50  text-amber-700; }
-@utility badge-green  { @apply bg-green-50  text-green-700; }
-
-@utility muted { @apply text-neutral-600; }
-
-@utility h1 { @apply text-3xl md:text-4xl font-semibold tracking-tight; }
-@utility h2 { @apply text-xl  md:text-2xl font-semibold; }
-
-@utility wrap { @apply mx-auto max-w-5xl px-5; }
-
-@utility shadow-hover { @apply transition-shadow hover:shadow-md; }
-@utility ring-focus   { @apply focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2; }
-
-.tech-tree, .tech-tree ul { margin: 0; padding: 0; list-style: none; }
 .tech-tree li::before {
   content: "";
   position: absolute;
@@ -105,8 +142,9 @@
   top: 0;
   bottom: -0.25rem;
   width: 1px;
-  background: rgb(229 231 235); /* neutral-200 */
+  background: hsl(var(--border));
 }
+
 .tech-tree li > ul::before {
   content: "";
   position: absolute;
@@ -114,5 +152,45 @@
   top: 0.8rem;
   width: 0.75rem;
   height: 1px;
-  background: rgb(229 231 235);
+  background: hsl(var(--border));
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
 }

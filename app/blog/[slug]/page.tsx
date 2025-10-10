@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import FormattedDate from '@/components/FormattedDate';
 import { getPostBySlug, listPostSlugs } from '@/lib/wp';
+import { TypographyH1 } from '@/components/components/ui/typography';
 
 export const revalidate = 600;
 
@@ -120,21 +121,21 @@ export default async function PostPage({ params }: PageProps) {
       />
       <article className="space-y-6">
         <div className="pt-2">
-          <Link href="/blog" className="link text-sm">← Back to Blog</Link>
+          <Link href="/blog" className="text-sm link">← Back to Blog</Link>
         </div>
 
         <header className="space-y-2">
-          <h1 className="h1">{post.title}</h1>
-          {post.date ? <FormattedDate date={post.date} className="muted text-sm" /> : null}
+          <TypographyH1 className="text-4xl">{post.title}</TypographyH1>
+          {post.date ? <FormattedDate date={post.date} className="text-sm text-muted-foreground" /> : null}
         </header>
 
         <div
-          className="prose prose-neutral max-w-none"
+          className="prose dark:prose-invert max-w-none"
           dangerouslySetInnerHTML={{ __html: post.contentHtml }}
         />
 
         <footer className="pt-6">
-          <Link href="/blog" className="link text-sm">← Back to Blog</Link>
+          <Link href="/blog" className="text-sm link">← Back to Blog</Link>
         </footer>
       </article>
     </>

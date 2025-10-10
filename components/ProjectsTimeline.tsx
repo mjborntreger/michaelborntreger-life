@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { listRecentProjects } from "@/lib/wp";
 import FormattedDate from "@/components/FormattedDate";
+import { Badge } from "@/components/components/ui/badge";
+import { TypographyH2, TypographyMuted } from "@/components/components/ui/typography";
 
 // ---------- Types ----------
 export type ExtraEvent = {
@@ -44,7 +46,7 @@ function dotColor(accent: TimelineItem["accent"]) {
     case "amber": return "bg-amber-500";
     case "green": return "bg-green-500";
     case "rose":  return "bg-rose-500";
-    case "gray":  return "bg-neutral-400";
+    case "gray":  return "bg-muted";
     default:      return "bg-blue-500";
   }
 }
@@ -113,15 +115,15 @@ export default async function ProjectsTimeline({
 
   return (
     <section className="space-y-4">
-      <h2 className="h2">Timeline</h2>
+      <TypographyH2 className="text-2xl">Timeline</TypographyH2>
 
-      <ol className="relative border-l border-neutral-300 space-y-6 pl-10">
+      <ol className="relative space-y-6 border-l border-border pl-10">
         {merged.map((item) => (
           <li key={item.id} className="relative">
             <div className={`absolute -left-6 top-1 h-3 w-3 rounded-full ${dotColor(item.accent)}`} />
             {/* Date range or fallback year */}
             {(item.startDate || item.yearLabel) ? (
-              <div className="mb-0.5 text-sm text-neutral-500">
+              <div className="mb-0.5 text-sm text-muted-foreground">
                 {item.startDate ? (
                   <>
                     <FormattedDate date={item.startDate} className="!m-0 !p-0 !text-inherit" />
@@ -133,7 +135,7 @@ export default async function ProjectsTimeline({
                     )}
                   </>
                 ) : (
-                  <time className="text-sm text-neutral-500">{yearOf(item.yearLabel)}</time>
+                  <time className="text-sm text-muted-foreground">{yearOf(item.yearLabel)}</time>
                 )}
               </div>
             ) : null}
@@ -158,21 +160,27 @@ export default async function ProjectsTimeline({
 
             {/* Role + Tech badges */}
             {item.role || (item.tech && item.tech.length > 0) ? (
-              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-neutral-600">
+              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                 {item.role && (
-                  <span className="inline-flex items-center rounded-full border px-2 py-0.5">
+                  <Badge variant="outline" className="rounded-full border-border/70 bg-transparent px-2.5 py-0.5 text-xs font-medium text-foreground">
                     {item.role}
-                  </span>
+                  </Badge>
                 )}
                 {item.tech?.map((t) => (
-                  <span key={t} className="inline-flex items-center rounded-full border px-2 py-0.5">
+                  <Badge
+                    key={t}
+                    variant="outline"
+                    className="rounded-full border-border/70 bg-transparent px-2.5 py-0.5 text-xs font-medium text-foreground"
+                  >
                     {t}
-                  </span>
+                  </Badge>
                 ))}
               </div>
             ) : null}
 
-            {item.summary && <p className="muted text-sm mt-1">{item.summary}</p>}
+            {item.summary && (
+              <TypographyMuted className="mt-1">{item.summary}</TypographyMuted>
+            )}
           </li>
         ))}
       </ol>

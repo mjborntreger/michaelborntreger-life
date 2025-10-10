@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@/components/components/ui/button';
 
 export default function RevealEmail({ email }: { email: string }) {
   const [show, setShow] = useState(false);
@@ -14,8 +15,8 @@ export default function RevealEmail({ email }: { email: string }) {
   }
 
   return (
-    <button onClick={() => setShow(true)} className="btn-primary ring-focus">
+    <Button type="button" onClick={() => setShow(true)}>
       Reveal Email
-    </button>
+    </Button>
   );
 }

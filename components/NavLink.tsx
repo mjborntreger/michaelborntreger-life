@@ -25,7 +25,7 @@ export default function NavLink({
   className,
   startsWith = false,
   externalNewTab = true,
-  activeClassName = 'text-black font-semibold underline underline-offset-4',
+  activeClassName = 'text-foreground font-semibold underline underline-offset-4',
   ...rest
 }: Props) {
   const pathname = usePathname() || '/';

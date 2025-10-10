@@ -1,3 +1,5 @@
+import { cn } from "@/components/lib/utils"
+
 type FormattedDateProps = {
   date: string | number | Date; // accepts ISO, timestamp, or Date
   className?: string;
@@ -15,7 +17,7 @@ export default function FormattedDate({
   return (
     <time
       dateTime={d.toISOString()}
-      className={`muted text-sm ${className}`}
+      className={cn("text-sm text-muted-foreground", className)}
     >
       {label}
     </time>

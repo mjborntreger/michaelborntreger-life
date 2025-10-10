@@ -2,37 +2,39 @@ import Link from 'next/link';
 import { getLinks } from '@/lib/wp';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import Favicon from '@/components/Favicon';
+import { TypographyH1, TypographyLead } from '@/components/components/ui/typography';
 
 export const revalidate = 900;
 
 type Links = Awaited<ReturnType<typeof getLinks>>;
 
-const BRAND_STYLES: Record<string, { label: string; icon?: string }> = {
-  'github.com': { label: 'text-neutral-900', icon: 'text-neutral-500' },
-  'linkedin.com': { label: 'text-sky-700', icon: 'text-sky-500' },
-  'x.com': { label: 'text-neutral-900', icon: 'text-neutral-500' },
-  'twitter.com': { label: 'text-neutral-900', icon: 'text-neutral-500' },
-  'youtube.com': { label: 'text-red-600', icon: 'text-red-500' },
-  'instagram.com': { label: 'text-fuchsia-600', icon: 'text-fuchsia-500' },
-  'facebook.com': { label: 'text-blue-600', icon: 'text-blue-500' },
-  'dev.to': { label: 'text-neutral-900', icon: 'text-neutral-500' },
-  'medium.com': { label: 'text-emerald-700', icon: 'text-emerald-500' },
-  'npmjs.com': { label: 'text-red-600', icon: 'text-red-500' },
-  'vercel.com': { label: 'text-neutral-900', icon: 'text-neutral-500' },
-  'netlify.com': { label: 'text-emerald-700', icon: 'text-emerald-500' },
-  'cloudflare.com': { label: 'text-orange-600', icon: 'text-orange-500' },
-  'notion.so': { label: 'text-neutral-900', icon: 'text-neutral-500' },
-  'figma.com': { label: 'text-rose-600', icon: 'text-rose-500' },
-  'dribbble.com': { label: 'text-pink-600', icon: 'text-pink-500' },
-  'behance.net': { label: 'text-blue-600', icon: 'text-blue-500' },
+const DEFAULT_BRAND_STYLE = { label: 'text-foreground', icon: 'text-muted-foreground' };
+const BRAND_STYLES: Record<string, { label: string; icon: string }> = {
+  'github.com': DEFAULT_BRAND_STYLE,
+  'linkedin.com': { label: 'text-primary', icon: 'text-primary' },
+  'x.com': DEFAULT_BRAND_STYLE,
+  'twitter.com': DEFAULT_BRAND_STYLE,
+  'youtube.com': { label: 'text-destructive', icon: 'text-destructive' },
+  'instagram.com': { label: 'text-accent-foreground', icon: 'text-accent-foreground' },
+  'facebook.com': { label: 'text-primary', icon: 'text-primary' },
+  'dev.to': DEFAULT_BRAND_STYLE,
+  'medium.com': DEFAULT_BRAND_STYLE,
+  'npmjs.com': { label: 'text-destructive', icon: 'text-destructive' },
+  'vercel.com': DEFAULT_BRAND_STYLE,
+  'netlify.com': DEFAULT_BRAND_STYLE,
+  'cloudflare.com': { label: 'text-accent-foreground', icon: 'text-accent-foreground' },
+  'notion.so': DEFAULT_BRAND_STYLE,
+  'figma.com': { label: 'text-primary', icon: 'text-primary' },
+  'dribbble.com': { label: 'text-primary', icon: 'text-primary' },
+  'behance.net': { label: 'text-primary', icon: 'text-primary' },
 };
 
 function getBrand(url: string) {
   try {
     const host = new URL(url).hostname.replace(/^www\./, '');
-    return BRAND_STYLES[host] ?? { label: 'text-blue-600', icon: 'text-neutral-400' };
+    return BRAND_STYLES[host] ?? DEFAULT_BRAND_STYLE;
   } catch {
-    return { label: 'text-blue-600', icon: 'text-neutral-400' };
+    return DEFAULT_BRAND_STYLE;
   }
 }
 
@@ -51,10 +53,10 @@ export default async function LinksPage() {
     return (
       <div className="space-y-2">
         <div className="pt-2">
-             <Link href="/" className="link text-sm">← Back home</Link>
-            </div>
-        <h1 className="h1">Links</h1>
-        <p className="muted">No links available.</p>
+          <Link href="/" className="link text-sm">← Back home</Link>
+        </div>
+        <TypographyH1 className="text-4xl">Links</TypographyH1>
+        <TypographyLead className="text-base text-muted-foreground">No links available.</TypographyLead>
       </div>
     );
   }
@@ -63,10 +65,12 @@ export default async function LinksPage() {
     <div className="space-y-6">
       <header className="space-y-6">
         <div className="pt-2">
-             <Link href="/" className="link text-sm">← Back home</Link>
-            </div>
-        <h1 className="h1">Links</h1>
-        <p className="muted">A collection of useful resources & profiles.</p>
+          <Link href="/" className="link text-sm">← Back home</Link>
+        </div>
+        <TypographyH1 className="text-4xl">Links</TypographyH1>
+        <TypographyLead className="text-base text-muted-foreground">
+          A collection of useful resources & profiles.
+        </TypographyLead>
       </header>
       <ul className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
         {links.map((l) => {
@@ -79,7 +83,7 @@ export default async function LinksPage() {
                 rel="noopener noreferrer"
                 title={l.url}
                 aria-label={`${l.label} (opens in new tab)`}
-                className="card p-4 shadow-hover flex flex-col justify-between h-full hover:bg-neutral-50"
+                className="flex h-full flex-col justify-between rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm transition-shadow hover:bg-accent/50 hover:text-accent-foreground hover:shadow-md"
               >
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
@@ -91,9 +95,11 @@ export default async function LinksPage() {
 
                 {/* Description (if present), otherwise show hostname */}
                 {l.description ? (
-                  <p className="muted text-sm mt-1">{l.description}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{l.description}</p>
                 ) : (
-                  <span className="block text-sm muted truncate mt-1">{hostname(l.url)}</span>
+                  <span className="mt-1 block truncate text-sm text-muted-foreground">
+                    {hostname(l.url)}
+                  </span>
                 )}
               </a>
             </li>
